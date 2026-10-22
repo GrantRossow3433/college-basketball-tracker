@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>College Basketball Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #222;
+            background: #f5f5f5;
+        }
+        section {
+            background: white;
+            padding: 24px;
+            margin: 24px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input, textarea {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            font: inherit;
+        }
+        button {
+            padding: 10px 18px;
+            background: #174a7e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font: inherit;
+        }
+        a { color: #174a7e; }
+        article {
+            border-top: 1px solid #ddd;
+            padding: 16px 0;
+            overflow-wrap: anywhere;
+        }
+        .errorlist { color: #a00000; }
+    </style>
+</head>
+<body>
+    <h1>College Basketball Tracker</h1>
+    <p>Keep track of college basketball games you want to watch.</p>
+
+    <section>
+        <h2>Add a Game</h2>
+        <p>Teams and date are required. All other fields are optional.</p>
+        <form method="post" action="{% url 'game_list' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Game</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>My Games</h2>
+        <form method="get" action="{% url 'game_list' %}">
+            <label for="search">Search teams, TV channels, or notes</label>
+            <input id="search" type="search" name="q"
+                   value="{{ query }}" placeholder="Example: Creighton">
+            <p>
+                <button type="submit">Search</button>
+                <a href="{% url 'game_list' %}">Show All</a>
+            </p>
+        </form>
+
+        {% for game in games %}
+            <article>
+                <h3>{{ game.away_team }} at {{ game.home_team }}</h3>
+                <p>
+                    {{ game.date|date:"F j, Y" }}
+                    {% if game.time %}
+                        — {{ game.time|time:"g:i A" }}
+                    {% else %}
+                        — Time TBD
+                    {% endif %}
+                </p>
+                <p>TV: {{ game.tv_channel|default:"TBD" }}</p>
+                {% if game.notes %}
+                    <p>{{ game.notes|linebreaksbr }}</p>
+                {% endif %}
+            </article>
+        {% empty %}
+            {% if query %}
+                <p>No games match your search.</p>
+            {% else %}
+                <p>No games saved yet. Add one above!</p>
+            {% endif %}
+        {% endfor %}
+    </section>
+</body>
+</html>
